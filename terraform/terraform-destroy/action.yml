@@ -42,6 +42,6 @@ runs:
       working-directory: ${{ inputs.working-dir }}
 
     - name: Terraform destroy
-      run: terraform apply -destroy -var-file=${{ inputs.var-file }} ${{ inputs.extra-args }}
+      run: terraform apply -destroy -var-file=${{ inputs.var-file }} ${{ inputs.extra-args }} -auto-approve
       shell: bash
       working-directory: ${{ inputs.working-dir }}
