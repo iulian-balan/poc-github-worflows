@@ -1,0 +1,47 @@
+name: "terraform-destroy"
+description: "Runs terraform format, init and destroy"
+inputs:
+  aws-region:
+    description: "AWS Region for S3 backend"
+    required: false
+    default: "us-east-1"
+  s3-bucket:
+    description: "S3 bucket used for terraform backend config"
+    required: true
+  s3-key:
+    description: "S3 key used for terraform backend config, e.g. infra-project/terraform.tfstate"
+    required: true
+  working-dir:
+    description: "Terraform working directory"
+    required: false
+    default: "./terraform"
+  var-file:
+    description: "Terraform variable file"
+    required: false
+  extra-args:
+    description: "Extra Terraform CLI arguments"
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Terraform format check
+      run: terraform fmt -recursive -write=false -check
+      shell: bash
+      working-directory: ${{ inputs.working-dir }}
+
+    - name: Initializes terraform working directory
+      run: |
+        terraform init \
+               -backend-config="bucket=${{ inputs.s3-bucket }}" \
+               -backend-config="key=${{ inputs.s3-key }}" \
+               -backend-config="region=${{ inputs.aws-region }}" \
+               -backend=true
+      shell: bash
+      working-directory: ${{ inputs.working-dir }}
+
+    - name: Terraform destroy
+      run: terraform destroy -var-file=${{ inputs.var-file }} ${{ inputs.extra-args }}
+      shell: bash
+      working-directory: ${{ inputs.working-dir }}
